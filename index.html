@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cokeboys | Get Your Key</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap');
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #0a0a0f;
+    --surface: #111118;
+    --border: #1e1e2e;
+    --accent: #7c3aed;
+    --accent-glow: rgba(124, 58, 237, 0.35);
+    --accent-light: #a78bfa;
+    --text: #e2e8f0;
+    --muted: #64748b;
+    --success: #22c55e;
+    --error: #ef4444;
+  }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Space Grotesk', sans-serif;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+    overflow: hidden;
+  }
+
+  /* Background grid */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(124,58,237,0.04) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(124,58,237,0.04) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* Purple glow orb */
+  body::after {
+    content: '';
+    position: fixed;
+    width: 600px;
+    height: 600px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(124,58,237,0.12) 0%, transparent 70%);
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .card {
+    position: relative;
+    z-index: 1;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 2.5rem;
+    width: 100%;
+    max-width: 480px;
+    box-shadow: 0 0 40px rgba(0,0,0,0.5), 0 0 0 1px rgba(124,58,237,0.1);
+  }
+
+  .logo {
+    font-family: 'Space Mono', monospace;
+    font-size: 1.4rem;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    color: var(--text);
+    margin-bottom: 0.25rem;
+  }
+
+  .logo span {
+    color: var(--accent-light);
+  }
+
+  .subtitle {
+    font-size: 0.85rem;
+    color: var(--muted);
+    margin-bottom: 2rem;
+  }
+
+  .divider {
+    height: 1px;
+    background: var(--border);
+    margin-bottom: 2rem;
+  }
+
+  /* States */
+  #state-loading, #state-key, #state-error, #state-empty {
+    display: none;
+  }
+  #state-loading.active, #state-key.active, #state-error.active, #state-empty.active {
+    display: block;
+  }
+
+  /* Loading */
+  .spinner {
+    width: 36px;
+    height: 36px;
+    border: 3px solid var(--border);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    margin: 1rem auto 1.25rem;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .loading-text {
+    text-align: center;
+    color: var(--muted);
+    font-size: 0.9rem;
+  }
+
+  /* Key display */
+  .key-label {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--muted);
+    margin-bottom: 0.6rem;
+  }
+
+  .key-box {
+    background: var(--bg);
+    border: 1px solid var(--accent);
+    border-radius: 10px;
+    padding: 1rem 1.25rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    box-shadow: 0 0 20px var(--accent-glow);
+    margin-bottom: 1rem;
+  }
+
+  .key-value {
+    font-family: 'Space Mono', monospace;
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--accent-light);
+    letter-spacing: 0.05em;
+    word-break: break-all;
+  }
+
+  .copy-btn {
+    background: var(--accent);
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    padding: 0.5rem 1rem;
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: background 0.15s, transform 0.1s;
+    flex-shrink: 0;
+  }
+  .copy-btn:hover { background: #6d28d9; }
+  .copy-btn:active { transform: scale(0.97); }
+  .copy-btn.copied { background: var(--success); }
+
+  .expiry-note {
+    font-size: 0.8rem;
+    color: var(--muted);
+    text-align: center;
+    margin-bottom: 1.5rem;
+  }
+
+  .expiry-note strong {
+    color: var(--text);
+  }
+
+  .instructions {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 1rem 1.25rem;
+  }
+
+  .instructions p {
+    font-size: 0.8rem;
+    color: var(--muted);
+    margin-bottom: 0.5rem;
+    line-height: 1.5;
+  }
+  .instructions p:last-child { margin-bottom: 0; }
+
+  .step {
+    display: inline-block;
+    background: var(--accent);
+    color: #fff;
+    font-size: 0.65rem;
+    font-weight: 700;
+    border-radius: 4px;
+    padding: 0.1rem 0.4rem;
+    margin-right: 0.4rem;
+    font-family: 'Space Mono', monospace;
+  }
+
+  /* Error / empty */
+  .state-icon {
+    font-size: 2.5rem;
+    text-align: center;
+    margin-bottom: 0.75rem;
+  }
+
+  .state-title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    text-align: center;
+    margin-bottom: 0.5rem;
+  }
+
+  .state-body {
+    font-size: 0.85rem;
+    color: var(--muted);
+    text-align: center;
+    line-height: 1.6;
+  }
+
+  .retry-btn {
+    display: block;
+    width: 100%;
+    margin-top: 1.25rem;
+    padding: 0.75rem;
+    background: var(--border);
+    color: var(--text);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+  .retry-btn:hover { background: #2a2a3e; }
+
+  .footer {
+    position: relative;
+    z-index: 1;
+    margin-top: 1.5rem;
+    font-size: 0.75rem;
+    color: var(--muted);
+    text-align: center;
+  }
+</style>
+</head>
+<body>
+
+<div class="card">
+  <div class="logo">COKE<span>BOYS</span></div>
+  <div class="subtitle">Script Key Portal</div>
+  <div class="divider"></div>
+
+  <!-- Loading -->
+  <div id="state-loading" class="active">
+    <div class="spinner"></div>
+    <p class="loading-text">Fetching your key...</p>
+  </div>
+
+  <!-- Key ready -->
+  <div id="state-key">
+    <div class="key-label">Your Key</div>
+    <div class="key-box">
+      <span class="key-value" id="key-display">—</span>
+      <button class="copy-btn" id="copy-btn" onclick="copyKey()">Copy</button>
+    </div>
+    <p class="expiry-note">Expires in <strong id="expiry-time">24 hours</strong>. Keys are one-time use — do not share.</p>
+    <div class="instructions">
+      <p><span class="step">1</span>Copy your key above</p>
+      <p><span class="step">2</span>Open Roblox and run the Cokeboys script</p>
+      <p><span class="step">3</span>Paste the key when prompted and hit Enter</p>
+    </div>
+  </div>
+
+  <!-- No keys left -->
+  <div id="state-empty">
+    <div class="state-icon">🔑</div>
+    <div class="state-title">No Keys Available</div>
+    <p class="state-body">All keys for today have been claimed. Check back later or click the Linkvertise link again tomorrow when new keys are added.</p>
+    <button class="retry-btn" onclick="init()">Check Again</button>
+  </div>
+
+  <!-- Error -->
+  <div id="state-error">
+    <div class="state-icon">⚠️</div>
+    <div class="state-title">Something Went Wrong</div>
+    <p class="state-body" id="error-msg">Could not connect to the key server. Please try again.</p>
+    <button class="retry-btn" onclick="init()">Retry</button>
+  </div>
+</div>
+
+<div class="footer">Keys reset every 24 hours &nbsp;·&nbsp; Cokeboys Script</div>
+
+<script>
+  const SUPABASE_URL = "https://lixcptmizfmndutoxrxr.supabase.co";
+  const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxpeGNwdG1pemZtbmR1dG94cnhyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODEwNDY2NDYsImV4cCI6MjA5NjYyMjY0Nn0.GxHk4LIC9fQbtyeUd0POaX5OoPtM-tbIloY07pYueOc";
+
+  const headers = {
+    "apikey": SUPABASE_KEY,
+    "Authorization": "Bearer " + SUPABASE_KEY,
+    "Content-Type": "application/json",
+    "Prefer": "return=representation"
+  };
+
+  function show(id) {
+    ["state-loading","state-key","state-error","state-empty"].forEach(s => {
+      document.getElementById(s).classList.remove("active");
+    });
+    document.getElementById(id).classList.add("active");
+  }
+
+  function formatExpiry(expiresAt) {
+    const now = Math.floor(Date.now() / 1000);
+    const diff = expiresAt - now;
+    if (diff <= 0) return "expired";
+    const h = Math.floor(diff / 3600);
+    const m = Math.floor((diff % 3600) / 60);
+    if (h > 0) return `${h}h ${m}m`;
+    return `${m} minutes`;
+  }
+
+  async function init() {
+    show("state-loading");
+    const now = Math.floor(Date.now() / 1000);
+
+    try {
+      // Find one unclaimed, unexpired, unused key
+      const res = await fetch(
+        `${SUPABASE_URL}/rest/v1/keys?select=id,key,expires_at&claimed=eq.false&used=eq.false&expires_at=gt.${now}&order=id.asc&limit=1`,
+        { headers }
+      );
+
+      if (!res.ok) throw new Error("Server error: " + res.status);
+
+      const data = await res.json();
+
+      if (!data || data.length === 0) {
+        show("state-empty");
+        return;
+      }
+
+      const row = data[0];
+
+      // Mark it as claimed
+      const updateRes = await fetch(
+        `${SUPABASE_URL}/rest/v1/keys?id=eq.${row.id}&claimed=eq.false`,
+        {
+          method: "PATCH",
+          headers,
+          body: JSON.stringify({ claimed: true })
+        }
+      );
+
+      if (!updateRes.ok) {
+        // Race condition — someone else grabbed it, try again
+        return init();
+      }
+
+      const updated = await updateRes.json();
+      if (!updated || updated.length === 0) {
+        // Already claimed by someone else
+        return init();
+      }
+
+      document.getElementById("key-display").textContent = row.key;
+      document.getElementById("expiry-time").textContent = formatExpiry(row.expires_at);
+      show("state-key");
+
+    } catch (err) {
+      document.getElementById("error-msg").textContent = err.message || "Could not connect to the key server.";
+      show("state-error");
+    }
+  }
+
+  function copyKey() {
+    const key = document.getElementById("key-display").textContent;
+    const btn = document.getElementById("copy-btn");
+    navigator.clipboard.writeText(key).then(() => {
+      btn.textContent = "Copied!";
+      btn.classList.add("copied");
+      setTimeout(() => {
+        btn.textContent = "Copy";
+        btn.classList.remove("copied");
+      }, 2000);
+    });
+  }
+
+  init();
+</script>
+</body>
+</html>
