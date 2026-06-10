@@ -402,7 +402,37 @@
     });
   }
 
-  init();
+  const WORKER_URL = "https://cokeboys-token.cokeboysclient.workers.dev";
+  const params = new URLSearchParams(window.location.search);
+  const token = params.get("token");
+
+  function showLocked() {
+    document.querySelector(".card").innerHTML = `
+      <div class="logo">COKE<span>BOYS</span></div>
+      <div class="subtitle">Script Key Portal</div>
+      <div class="divider"></div>
+      <div style="text-align:center;padding:1rem 0;">
+        <div style="font-size:2.5rem;margin-bottom:0.75rem;">🔒</div>
+        <div style="font-size:1.1rem;font-weight:600;margin-bottom:0.5rem;">Access Denied</div>
+        <p style="font-size:0.85rem;color:var(--muted);line-height:1.6;">You must get your key through the official link.<br>Direct access is not allowed.</p>
+      </div>
+    `;
+  }
+
+  if (!token) {
+    showLocked();
+  } else {
+    fetch(`${WORKER_URL}/validate?token=${token}`)
+      .then(r => r.json())
+      .then(data => {
+        if (data.valid) {
+          init();
+        } else {
+          showLocked();
+        }
+      })
+      .catch(() => showLocked());
+  }
 </script>
 </body>
 </html>
