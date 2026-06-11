@@ -345,7 +345,7 @@
       }
 
       document.getElementById("key-display").textContent = data.key;
-      document.getElementById("expiry-time").textContent = "24 hours";
+      document.getElementById("expiry-time").textContent = formatExpiry(data.expires_at);
       show("state-key");
 
     } catch (err) {
