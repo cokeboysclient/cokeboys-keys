@@ -309,15 +309,9 @@
 <div class="footer">Keys reset every 24 hours &nbsp;·&nbsp; Cokeboys Script</div>
 
 <script>
-  const SUPABASE_URL = "https://uxopcmwtwkswtbzthfdv.supabase.co";
-  const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InV4b3BjbXd0d2tzd3RienRoZmR2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODEwNDk3NjYsImV4cCI6MjA5NjYyNTc2Nn0.b32S-c_afhly8qapdxQ52xjzSn_A1EJgs0-C-0HYwio";
-
-  const headers = {
-    "apikey": SUPABASE_KEY,
-    "Authorization": "Bearer " + SUPABASE_KEY,
-    "Content-Type": "application/json",
-    "Prefer": "return=representation"
-  };
+  const WORKER_URL = "https://cokeboys-token.cokeboysclient.workers.dev";
+  const params = new URLSearchParams(window.location.search);
+  const token = params.get("token");
 
   function show(id) {
     ["state-loading","state-key","state-error","state-empty"].forEach(s => {
@@ -338,49 +332,20 @@
 
   async function init() {
     show("state-loading");
-    const now = Math.floor(Date.now() / 1000);
 
     try {
-      // Find one unclaimed, unexpired, unused key
-      const res = await fetch(
-        `${SUPABASE_URL}/rest/v1/keys?select=id,key,expires_at&claimed=eq.false&used=eq.false&expires_at=gt.${now}&order=id.asc&limit=1`,
-        { headers }
-      );
-
+      const res = await fetch(`${WORKER_URL}/getkey`);
       if (!res.ok) throw new Error("Server error: " + res.status);
 
       const data = await res.json();
 
-      if (!data || data.length === 0) {
+      if (!data || !data.key) {
         show("state-empty");
         return;
       }
 
-      const row = data[0];
-
-      // Mark it as claimed
-      const updateRes = await fetch(
-        `${SUPABASE_URL}/rest/v1/keys?id=eq.${row.id}&claimed=eq.false`,
-        {
-          method: "PATCH",
-          headers,
-          body: JSON.stringify({ claimed: true })
-        }
-      );
-
-      if (!updateRes.ok) {
-        // Race condition — someone else grabbed it, try again
-        return init();
-      }
-
-      const updated = await updateRes.json();
-      if (!updated || updated.length === 0) {
-        // Already claimed by someone else
-        return init();
-      }
-
-      document.getElementById("key-display").textContent = row.key;
-      document.getElementById("expiry-time").textContent = formatExpiry(row.expires_at);
+      document.getElementById("key-display").textContent = data.key;
+      document.getElementById("expiry-time").textContent = "24 hours";
       show("state-key");
 
     } catch (err) {
@@ -401,10 +366,6 @@
       }, 2000);
     });
   }
-
-  const WORKER_URL = "https://cokeboys-token.cokeboysclient.workers.dev";
-  const params = new URLSearchParams(window.location.search);
-  const token = params.get("token");
 
   function showLocked() {
     document.querySelector(".card").innerHTML = `
