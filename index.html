@@ -330,11 +330,11 @@
     return `${m} minutes`;
   }
 
-  async function init() {
+  async function init(verifiedId) {
     show("state-loading");
 
     try {
-      const res = await fetch(`${WORKER_URL}/getkey`);
+      const res = await fetch(`${WORKER_URL}/getkey?verified=${verifiedId}`);
       if (!res.ok) throw new Error("Server error: " + res.status);
 
       const data = await res.json();
@@ -386,8 +386,8 @@
     fetch(`${WORKER_URL}/validate?token=${token}`)
       .then(r => r.json())
       .then(data => {
-        if (data.valid) {
-          init();
+        if (data.valid && data.verified) {
+          init(data.verified);
         } else {
           showLocked();
         }
